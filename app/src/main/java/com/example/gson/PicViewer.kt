@@ -1,5 +1,6 @@
 package com.example.gson
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -37,6 +38,14 @@ class PicViewer : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_favorite -> {
                 Toast.makeText(this, "Добавлено в Избранное", Toast.LENGTH_SHORT).show()
+
+                val imageUrl = intent.getStringExtra("picLink")
+                val resultIntent = Intent()
+                resultIntent.putExtra("imageUrl", imageUrl)
+                resultIntent.putExtra("isFavorite", true)
+                setResult(RESULT_OK, resultIntent)
+
+                finish()
                 true
             }
             else -> super.onOptionsItemSelected(item)

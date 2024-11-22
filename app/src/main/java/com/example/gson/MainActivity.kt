@@ -1,18 +1,18 @@
 package com.example.gson
 
-import java.io.IOException
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import timber.log.Timber
+import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import com.google.gson.Gson
-import android.content.Intent
+import java.io.IOException
+import timber.log.Timber
 
 data class Photo(
     val id: String,
@@ -51,7 +51,6 @@ class MainActivity : AppCompatActivity(), OnPhotoClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -59,9 +58,6 @@ class MainActivity : AppCompatActivity(), OnPhotoClickListener {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        Timber.plant(Timber.DebugTree())
-        Timber.d("Timber is initialized")
 
         recyclerView = findViewById(R.id.rView)
         recyclerView.layoutManager = GridLayoutManager(this, 2)
@@ -86,54 +82,48 @@ class MainActivity : AppCompatActivity(), OnPhotoClickListener {
                                 val wrapper = gson.fromJson(bodyString, Wrapper::class.java)
 
                                 if (wrapper.photos.photo.isNotEmpty()) {
-                                    logEveryFifthPhoto(wrapper.photos.photo)
-                                    generatePhotoLinks(wrapper.photos.photo)
-
                                     runOnUiThread {
                                         photoAdapter = Adapter(wrapper.photos.photo, this@MainActivity)
                                         recyclerView.adapter = photoAdapter
                                     }
-                                } else {
-                                    Timber.e("No photos found")
                                 }
                             } catch (e: Exception) {
                                 Timber.e(e, "Failed to parse response")
                             }
-                        } else {
-                            Timber.e("Response body is null")
                         }
                     }
-                } else {
-                    Timber.e("Unexpected response: ${response.code}")
                 }
             }
         })
     }
 
-    private fun logEveryFifthPhoto(photos: List<Photo>) {
-        for (i in photos.indices) {
-            if ((i + 1) % 5 == 0) {
-                val photo = photos[i]
-                Timber.d("id: ${photo.id}, owner: ${photo.owner}, secret: ${photo.secret}\n" +
-                        "server: ${photo.server}, farm: ${photo.farm}, title: ${photo.title}\n" +
-                        "ispublic: ${photo.ispublic}, isfriend: ${photo.isfriend}, isfamily: ${photo.isfamily}")
-            }
-        }
-    }
-
-    private fun generatePhotoLinks(photos: List<Photo>) {
-        val photoLinks = photos.map { photo ->
-            "https://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}_z.jpg"
-        }
-        photoLinks.forEach { link ->
-            Timber.d("Photo link: $link")
-        }
-    }
 
     override fun onPhotoClick(photo: Photo) {
         val imageUrl = "https://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}_z.jpg"
         val intent = Intent(this, PicViewer::class.java)
         intent.putExtra("picLink", imageUrl)
-        startActivity(intent)
+        startActivityForResult(intent, 1)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == RESULT_OK && data != null) {
+            val imageUrl = data.getStringExtra("imageUrl")
+            val isFavorite = data.getBooleanExtra("isFavorite", false)
+
+            if (isFavorite) {
+                val snackBar = Snackbar.make(
+                    findViewById(R.id.main),
+                    "Картинка добавлена в избранное",
+                    Snackbar.LENGTH_LONG
+                )
+                snackBar.setAction("Открыть") {
+                    val browserIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(imageUrl))
+                    startActivity(browserIntent)
+                }
+                snackBar.show()
+            }
+        }
     }
 }
