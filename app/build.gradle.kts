@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mydialer"
+    namespace = "com.example.gson"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.mydialer"
+        applicationId = "com.example.gson"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -46,6 +46,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation ("com.jakewharton.timber:timber:5.0.1")
-    implementation ("com.google.code.gson:gson:2.8.8")
     implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("androidx.recyclerview:recyclerview:1.3.0")
+    implementation ("com.github.bumptech.glide:glide:4.12.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 }

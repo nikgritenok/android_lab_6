@@ -1,4 +1,4 @@
-package com.example.mydialer
+package com.example.gson
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

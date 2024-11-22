@@ -1,4 +1,4 @@
-package com.example.mydialer
+package com.example.gson
 
 import org.junit.Test
 
